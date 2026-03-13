@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useRef, Fragment } from 'react'
+import { useEffect, useRef } from 'react'
 import { COLORS } from '@/lib/utils'
 import { ParticipantPublic } from '@/lib/types'
 
@@ -67,6 +67,10 @@ export default function TimeGrid({
     const container = containerRef.current
     if (!container) return
 
+    const isTouchDevice =
+      typeof window !== 'undefined' &&
+      window.matchMedia('(pointer: coarse)').matches
+
     const resetDrag = () => {
       isDragging.current = false
       paintMode.current = null
@@ -84,7 +88,9 @@ export default function TimeGrid({
     }
 
     const onMouseDown = (e: MouseEvent) => {
+      if (isTouchDevice) return
       if (e.button !== 0) return
+
       const cell = findSlotElement(e.target)
       if (!cell) return
       const slot = cell.dataset.slot
@@ -98,22 +104,75 @@ export default function TimeGrid({
     }
 
     const onMouseOver = (e: MouseEvent) => {
+      if (isTouchDevice) return
       if (!isDragging.current) return
+
       const cell = findSlotElement(e.target)
       if (!cell) return
       const slot = cell.dataset.slot
       if (!slot) return
+
       applySlot(slot)
+    }
+
+    const onTouchStart = (e: TouchEvent) => {
+      if (!isTouchDevice) return
+
+      const touch = e.touches[0]
+      if (!touch) return
+
+      const el = document.elementFromPoint(touch.clientX, touch.clientY)
+      const cell = findSlotElement(el)
+      if (!cell) return
+      const slot = cell.dataset.slot
+      if (!slot) return
+
+      isDragging.current = true
+      touchedSlotsRef.current.clear()
+      paintMode.current = mySlots.has(slot) ? 'off' : 'on'
+      applySlot(slot)
+    }
+
+    const onTouchMove = (e: TouchEvent) => {
+      if (!isTouchDevice) return
+      if (!isDragging.current) return
+
+      const touch = e.touches[0]
+      if (!touch) return
+
+      const el = document.elementFromPoint(touch.clientX, touch.clientY)
+      const cell = findSlotElement(el)
+      if (!cell) return
+      const slot = cell.dataset.slot
+      if (!slot) return
+
+      applySlot(slot)
+      e.preventDefault()
+    }
+
+    const onTouchEnd = () => {
+      if (!isTouchDevice) return
+      resetDrag()
     }
 
     container.addEventListener('mousedown', onMouseDown)
     container.addEventListener('mouseover', onMouseOver)
     document.addEventListener('mouseup', resetDrag)
 
+    container.addEventListener('touchstart', onTouchStart, { passive: true })
+    container.addEventListener('touchmove', onTouchMove, { passive: false })
+    container.addEventListener('touchend', onTouchEnd)
+    container.addEventListener('touchcancel', onTouchEnd)
+
     return () => {
       container.removeEventListener('mousedown', onMouseDown)
       container.removeEventListener('mouseover', onMouseOver)
       document.removeEventListener('mouseup', resetDrag)
+
+      container.removeEventListener('touchstart', onTouchStart)
+      container.removeEventListener('touchmove', onTouchMove)
+      container.removeEventListener('touchend', onTouchEnd)
+      container.removeEventListener('touchcancel', onTouchEnd)
     }
   }, [editable, mySlots, onSlotsChange])
 
@@ -145,7 +204,7 @@ export default function TimeGrid({
         })}
 
         {times.map(t => (
-          <Fragment key={t}>
+          <div key={`row-${t}`} style={{ display: 'contents' }}>
             <div className="grid-time-label">{t}</div>
             {dates.map(d => {
               const slot = `${d}T${t}`
@@ -184,7 +243,7 @@ export default function TimeGrid({
                 </div>
               )
             })}
-          </Fragment>
+          </div>
         ))}
       </div>
     </div>
