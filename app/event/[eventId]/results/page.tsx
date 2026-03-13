@@ -18,7 +18,7 @@ export default function ResultsPage({ params }: { params: { eventId: string } })
   const [notFound, setNotFound] = useState(false)
 
   const load = useCallback(() => {
-    fetch(`/api/events/${params.eventId}`)
+    fetch(`/api/events/${params.eventId}`, { cache: 'no-store' })
       .then(r => r.json())
       .then(d => {
         if (!d.event) {
@@ -58,6 +58,7 @@ export default function ResultsPage({ params }: { params: { eventId: string } })
 
   const rankedGroups = (() => {
     if (!event || !participants.length) return []
+
     const slotCount: Record<string, number> = {}
     const slotNames: Record<string, string[]> = {}
     const allSlots: string[] = []
@@ -147,6 +148,7 @@ export default function ResultsPage({ params }: { params: { eventId: string } })
       if (!byCount[g.count]) byCount[g.count] = []
       byCount[g.count].push(g)
     })
+
     const keys = Object.keys(byCount).map(Number).sort((a, b) => b - a)
     const lines: string[] = []
 
@@ -209,6 +211,7 @@ export default function ResultsPage({ params }: { params: { eventId: string } })
         <>
           <div className="card" style={{ marginBottom: 16 }}>
             <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 8 }}>参加者を選択</div>
+
             <label
               style={{
                 display: 'flex',
@@ -222,7 +225,7 @@ export default function ResultsPage({ params }: { params: { eventId: string } })
             >
               <input
                 type="checkbox"
-                checked={checkedIds.size === participants.length}
+                checked={participants.length > 0 && checkedIds.size === participants.length}
                 onChange={e =>
                   setCheckedIds(e.target.checked ? new Set(participants.map(p => p.id)) : new Set())
                 }
@@ -252,11 +255,8 @@ export default function ResultsPage({ params }: { params: { eventId: string } })
                     onChange={e =>
                       setCheckedIds(prev => {
                         const n = new Set(prev)
-                        if (e.target.checked) {
-                          n.add(p.id)
-                        } else {
-                          n.delete(p.id)
-                        }
+                        if (e.target.checked) n.add(p.id)
+                        else n.delete(p.id)
                         return n
                       })
                     }
@@ -279,6 +279,7 @@ export default function ResultsPage({ params }: { params: { eventId: string } })
 
           <div className="card">
             <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 12 }}>共通の空き時間</div>
+
             {commonSlots.length === 0 ? (
               <p style={{ color: 'var(--muted)', fontSize: 14, padding: '16px 0' }}>
                 {checkedIds.size === 0 ? '参加者を選択してください' : '共通の空き時間が見つかりませんでした'}
@@ -317,6 +318,7 @@ export default function ResultsPage({ params }: { params: { eventId: string } })
                     </div>
                   ))}
                 </div>
+
                 <div className="copy-preview" style={{ marginBottom: 8 }}>{commonText}</div>
                 <button className="btn btn-accent btn-full" onClick={copyCommon}>
                   {copiedCommon ? '✓ コピーしました！' : '📋 このテキストをコピー'}
@@ -335,7 +337,7 @@ export default function ResultsPage({ params }: { params: { eventId: string } })
             <>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
                 {rankedGroups.map((g, i) => {
-                  const pct = Math.round((g.count / participants.length) * 100)
+                  const pct = participants.length > 0 ? Math.round((g.count / participants.length) * 100) : 0
                   return (
                     <div
                       key={i}
@@ -407,7 +409,7 @@ export default function ResultsPage({ params }: { params: { eventId: string } })
             startTime={event.start_time}
             endTime={event.end_time}
             participants={participants}
-            mySlots={new Set()}
+            mySlots={new Set<string>()}
             editable={false}
           />
         </div>
