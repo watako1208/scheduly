@@ -1,5 +1,3 @@
-
-
 'use client'
 import { useEffect, useRef, Fragment } from 'react'
 import { COLORS } from '@/lib/utils'
@@ -108,55 +106,26 @@ export default function TimeGrid({
       applySlot(slot)
     }
 
-    const onTouchStart = (e: TouchEvent) => {
-      const touch = e.touches[0]
-      if (!touch) return
-      const el = document.elementFromPoint(touch.clientX, touch.clientY)
-      const cell = findSlotElement(el)
-      if (!cell) return
-      const slot = cell.dataset.slot
-      if (!slot) return
-
-      isDragging.current = true
-      touchedSlotsRef.current.clear()
-      paintMode.current = mySlots.has(slot) ? 'off' : 'on'
-      applySlot(slot)
-    }
-
-    const onTouchMove = (e: TouchEvent) => {
-      if (!isDragging.current) return
-      const touch = e.touches[0]
-      if (!touch) return
-      const el = document.elementFromPoint(touch.clientX, touch.clientY)
-      const cell = findSlotElement(el)
-      if (!cell) return
-      const slot = cell.dataset.slot
-      if (!slot) return
-      applySlot(slot)
-      e.preventDefault()
-    }
-
     container.addEventListener('mousedown', onMouseDown)
     container.addEventListener('mouseover', onMouseOver)
-    container.addEventListener('touchstart', onTouchStart, { passive: true })
-    container.addEventListener('touchmove', onTouchMove, { passive: false })
     document.addEventListener('mouseup', resetDrag)
-    document.addEventListener('touchend', resetDrag)
-    document.addEventListener('touchcancel', resetDrag)
 
     return () => {
       container.removeEventListener('mousedown', onMouseDown)
       container.removeEventListener('mouseover', onMouseOver)
-      container.removeEventListener('touchstart', onTouchStart)
-      container.removeEventListener('touchmove', onTouchMove)
       document.removeEventListener('mouseup', resetDrag)
-      document.removeEventListener('touchend', resetDrag)
-      document.removeEventListener('touchcancel', resetDrag)
     }
   }, [editable, mySlots, onSlotsChange])
 
   return (
-    <div className="grid-wrapper">
+    <div
+      className="grid-wrapper"
+      style={{
+        overflowX: 'auto',
+        overflowY: 'visible',
+        WebkitOverflowScrolling: 'touch',
+      }}
+    >
       <div
         ref={containerRef}
         className="time-grid"
