@@ -171,7 +171,7 @@ export default function CreatePage() {
     }
   }
 
-  const canSubmit = title.trim() && dates.length > 0 && startTime < endTime && !loading
+  const canSubmit = !!title.trim() && dates.length > 0 && startTime < endTime && !loading
 
   return (
     <div style={{ maxWidth: 860, margin: '0 auto', padding: '32px 24px 64px' }}>
@@ -250,4 +250,5 @@ export default function CreatePage() {
     </div>
   )
 }
+
 
