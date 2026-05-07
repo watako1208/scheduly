@@ -90,7 +90,6 @@ export default function TimeGrid({
     const onMouseDown = (e: MouseEvent) => {
       if (isTouchDevice) return
       if (e.button !== 0) return
-
       const cell = findSlotElement(e.target)
       if (!cell) return
       const slot = cell.dataset.slot
@@ -106,21 +105,17 @@ export default function TimeGrid({
     const onMouseOver = (e: MouseEvent) => {
       if (isTouchDevice) return
       if (!isDragging.current) return
-
       const cell = findSlotElement(e.target)
       if (!cell) return
       const slot = cell.dataset.slot
       if (!slot) return
-
       applySlot(slot)
     }
 
     const onTouchStart = (e: TouchEvent) => {
       if (!isTouchDevice) return
-
+      if (e.touches.length !== 1) return
       const touch = e.touches[0]
-      if (!touch) return
-
       const el = document.elementFromPoint(touch.clientX, touch.clientY)
       const cell = findSlotElement(el)
       if (!cell) return
@@ -136,10 +131,8 @@ export default function TimeGrid({
     const onTouchMove = (e: TouchEvent) => {
       if (!isTouchDevice) return
       if (!isDragging.current) return
-
+      if (e.touches.length !== 1) return
       const touch = e.touches[0]
-      if (!touch) return
-
       const el = document.elementFromPoint(touch.clientX, touch.clientY)
       const cell = findSlotElement(el)
       if (!cell) return
@@ -158,7 +151,6 @@ export default function TimeGrid({
     container.addEventListener('mousedown', onMouseDown)
     container.addEventListener('mouseover', onMouseOver)
     document.addEventListener('mouseup', resetDrag)
-
     container.addEventListener('touchstart', onTouchStart, { passive: true })
     container.addEventListener('touchmove', onTouchMove, { passive: false })
     container.addEventListener('touchend', onTouchEnd)
@@ -168,7 +160,6 @@ export default function TimeGrid({
       container.removeEventListener('mousedown', onMouseDown)
       container.removeEventListener('mouseover', onMouseOver)
       document.removeEventListener('mouseup', resetDrag)
-
       container.removeEventListener('touchstart', onTouchStart)
       container.removeEventListener('touchmove', onTouchMove)
       container.removeEventListener('touchend', onTouchEnd)
@@ -177,14 +168,7 @@ export default function TimeGrid({
   }, [editable, mySlots, onSlotsChange])
 
   return (
-    <div
-      className="grid-wrapper"
-      style={{
-        overflowX: 'auto',
-        overflowY: 'visible',
-        WebkitOverflowScrolling: 'touch',
-      }}
-    >
+    <div className="grid-wrapper">
       <div
         ref={containerRef}
         className="time-grid"

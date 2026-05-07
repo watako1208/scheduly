@@ -49,38 +49,20 @@ function CalendarPicker({
     <div>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
         <button className="btn btn-outline btn-sm" onClick={prevMonth}>‹</button>
-        <span style={{ fontFamily: '"DM Serif Display",serif', fontSize: '1.1rem' }}>
-          {y}年 {months[mo]}
-        </span>
+        <span style={{ fontFamily: '"DM Serif Display",serif', fontSize: '1.1rem' }}>{y}年 {months[mo]}</span>
         <button className="btn btn-outline btn-sm" onClick={nextMonth}>›</button>
       </div>
-
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: 3 }}>
         {['日', '月', '火', '水', '木', '金', '土'].map(d => (
-          <div
-            key={d}
-            style={{
-              textAlign: 'center',
-              fontSize: 11,
-              fontWeight: 600,
-              textTransform: 'uppercase',
-              color: 'var(--muted)',
-              padding: '4px 0 6px',
-            }}
-          >
-            {d}
-          </div>
+          <div key={d} style={{ textAlign: 'center', fontSize: 11, fontWeight: 600, textTransform: 'uppercase', color: 'var(--muted)', padding: '4px 0 6px' }}>{d}</div>
         ))}
-
         {Array(firstDow).fill(null).map((_, i) => <div key={`e${i}`} />)}
-
         {Array.from({ length: daysInMonth }, (_, i) => i + 1).map(d => {
           const dateStr = `${y}-${String(mo + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
           const dt = new Date(y, mo, d)
           const isPast = dt < today
           const isSel = selected.includes(dateStr)
           const isToday = dt.toDateString() === today.toDateString()
-
           return (
             <div
               key={d}
@@ -126,43 +108,19 @@ export default function CreatePage() {
 
   const handleSubmit = async () => {
     setError('')
-
-    if (!title.trim()) {
-      setError('イベント名を入力してください')
-      return
-    }
-
-    if (!dates.length) {
-      setError('候補日を1日以上選択してください')
-      return
-    }
-
-    if (startTime >= endTime) {
-      setError('終了時刻は開始時刻より後にしてください')
-      return
-    }
+    if (!title.trim()) { setError('イベント名を入力してください'); return }
+    if (!dates.length) { setError('候補日を1日以上選択してください'); return }
+    if (startTime >= endTime) { setError('終了時刻は開始時刻より後にしてください'); return }
 
     setLoading(true)
-
     try {
       const res = await fetch('/api/events', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: title.trim(),
-          dates,
-          startTime,
-          endTime,
-        }),
+        body: JSON.stringify({ title: title.trim(), dates, startTime, endTime }),
       })
-
       const data = await res.json()
-
-      if (!res.ok) {
-        setError(data.error)
-        return
-      }
-
+      if (!res.ok) { setError(data.error || '作成に失敗しました'); return }
       router.push(`/create/complete/${data.shareId}`)
     } catch {
       setError('通信エラーが発生しました')
@@ -176,20 +134,12 @@ export default function CreatePage() {
   return (
     <div style={{ maxWidth: 860, margin: '0 auto', padding: '32px 24px 64px' }}>
       <h1 style={{ fontSize: '2rem', marginBottom: 8 }}>イベントを作成する</h1>
-      <p style={{ color: 'var(--muted)', fontSize: 14, marginBottom: 32 }}>
-        候補日と時間帯を設定して、参加者に共有しましょう
-      </p>
+      <p style={{ color: 'var(--muted)', fontSize: 14, marginBottom: 32 }}>候補日と時間帯を設定して、参加者に共有しましょう</p>
 
       <div className="card">
         <div className="field">
           <label>イベント名 <span style={{ color: 'var(--accent)' }}>*</span></label>
-          <input
-            type="text"
-            value={title}
-            onChange={e => setTitle(e.target.value)}
-            placeholder="例：3月のチームランチ"
-            maxLength={80}
-          />
+          <input type="text" value={title} onChange={e => setTitle(e.target.value)} placeholder="例：3月のチームランチ" maxLength={80} />
         </div>
 
         <div className="field">
@@ -200,20 +150,7 @@ export default function CreatePage() {
               {dates.map(d => (
                 <span key={d} className="date-chip">
                   {fmtDate(d)}
-                  <button
-                    onClick={() => toggleDate(d)}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      cursor: 'pointer',
-                      color: 'var(--muted)',
-                      fontSize: 14,
-                      lineHeight: 1,
-                      padding: 0,
-                    }}
-                  >
-                    ×
-                  </button>
+                  <button onClick={() => toggleDate(d)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: 14, lineHeight: 1, padding: 0 }}>×</button>
                 </span>
               ))}
             </div>
@@ -227,7 +164,6 @@ export default function CreatePage() {
               {TIMES.map(t => <option key={t} value={t}>{t}</option>)}
             </select>
           </div>
-
           <div className="field" style={{ marginBottom: 0 }}>
             <label>終了時刻 <span style={{ color: 'var(--accent)' }}>*</span></label>
             <select value={endTime} onChange={e => setEndTime(e.target.value)}>
@@ -237,18 +173,10 @@ export default function CreatePage() {
         </div>
 
         {error && <p className="alert-error" style={{ marginTop: 16 }}>{error}</p>}
-
-        <button
-          className="btn btn-primary btn-full"
-          style={{ marginTop: 20 }}
-          onClick={handleSubmit}
-          disabled={!canSubmit}
-        >
+        <button className="btn btn-primary btn-full" style={{ marginTop: 20 }} onClick={handleSubmit} disabled={!canSubmit}>
           {loading ? '作成中...' : 'イベントを作成する →'}
         </button>
       </div>
     </div>
   )
 }
-
-

@@ -14,7 +14,7 @@ export default function CompletePage({ params }: { params: { eventId: string } }
     : ''
 
   useEffect(() => {
-    fetch(`/api/events/${params.eventId}`)
+    fetch(`/api/events/${params.eventId}`, { cache: 'no-store' })
       .then(r => r.json())
       .then(d => { if (d.event) setEventTitle(d.event.title) })
   }, [params.eventId])

@@ -58,9 +58,7 @@ export default function JoinPage({ params }: { params: { eventId: string } }) {
       setEditError('名前とパスワードを入力してください')
       return
     }
-
     setEditError('')
-
     const res = await fetch('/api/participants/verify', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -70,14 +68,11 @@ export default function JoinPage({ params }: { params: { eventId: string } }) {
         password: editPw,
       }),
     })
-
     const data = await res.json()
-
     if (!res.ok) {
       setEditError(data.error)
       return
     }
-
     setName(editName.trim())
     setPw(editPw)
     setParticipantId(data.participantId)
@@ -88,12 +83,9 @@ export default function JoinPage({ params }: { params: { eventId: string } }) {
 
   const save = async () => {
     if (!name.trim()) return
-
     setSaving(true)
-
     try {
       let res: Response
-
       if (isEditMode && participantId) {
         res = await fetch(`/api/participants/${participantId}`, {
           method: 'PUT',
@@ -115,13 +107,11 @@ export default function JoinPage({ params }: { params: { eventId: string } }) {
           }),
         })
       }
-
       if (!res.ok) {
         const d = await res.json()
         alert(d.error)
         return
       }
-
       router.push(`/event/${params.eventId}/results`)
     } finally {
       setSaving(false)
@@ -316,3 +306,4 @@ export default function JoinPage({ params }: { params: { eventId: string } }) {
     </div>
   )
 }
+
